@@ -111,7 +111,6 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import axios from 'axios';
 
 const bookings = ref([]);
 const rooms = ref([]);
@@ -142,7 +141,7 @@ const availableRooms = computed(() => rooms.value.filter(r => r.is_available));
 
 const fetchBookings = async () => {
   try {
-    const response = await axios.get('/api/dashboard/bookings');
+    const response = await window.apiClient.get('/dashboard/bookings');
     bookings.value = response.data;
   } catch (e) {
     error.value = 'Failed to fetch bookings';
@@ -151,7 +150,7 @@ const fetchBookings = async () => {
 
 const fetchRooms = async () => {
   try {
-    const response = await axios.get('/api/dashboard/rooms');
+    const response = await window.apiClient.get('/dashboard/rooms');
     rooms.value = response.data;
   } catch (e) {
     error.value = 'Failed to fetch rooms';
@@ -163,10 +162,10 @@ const submitBooking = async () => {
     error.value = '';
     success.value = '';
     if (editingId.value) {
-      await axios.put(`/api/dashboard/bookings/${editingId.value}`, form.value);
+      await window.apiClient.put(`/dashboard/bookings/${editingId.value}`, form.value);
       success.value = 'Booking updated successfully';
     } else {
-      await axios.post('/api/dashboard/bookings', form.value);
+      await window.apiClient.post('/dashboard/bookings', form.value);
       success.value = 'Booking created successfully';
     }
     form.value = { guest_name: '', guest_email: '', guest_phone: '', room_id: '', check_in: '', check_out: '', guests_count: 1, notes: '' };
@@ -196,7 +195,7 @@ const editBooking = (booking) => {
 
 const updateStatus = async (id, status) => {
   try {
-    await axios.patch(`/api/dashboard/bookings/${id}`, { status });
+    await window.apiClient.patch(`/dashboard/bookings/${id}`, { status });
     fetchBookings();
   } catch (e) {
     error.value = 'Failed to update status';
@@ -206,7 +205,7 @@ const updateStatus = async (id, status) => {
 const deleteBooking = async (id) => {
   if (!confirm('Are you sure?')) return;
   try {
-    await axios.delete(`/api/dashboard/bookings/${id}`);
+    await window.apiClient.delete(`/dashboard/bookings/${id}`);
     fetchBookings();
   } catch (e) {
     error.value = 'Failed to delete booking';

@@ -1,45 +1,36 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-    <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto py-6 px-4">
-        <h1 class="text-3xl font-bold text-gray-900">Restaurant & Room Booking</h1>
+    <header v-if="showNav" class="bg-white shadow">
+      <div class="max-w-7xl mx-auto py-4 px-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">Restaurant & Room Booking</h1>
+        <button @click="logout" class="text-red-600 hover:text-red-800 text-sm">Logout</button>
       </div>
     </header>
 
     <main class="max-w-7xl mx-auto py-6 px-4">
-      <div class="mb-6 flex space-x-4">
-        <button
-          @click="activeTab = 'dashboard'"
-          :class="['px-4 py-2 rounded', activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-gray-200']"
-        >
-          Dashboard
-        </button>
-        <button
-          @click="activeTab = 'rooms'"
-          :class="['px-4 py-2 rounded', activeTab === 'rooms' ? 'bg-blue-600 text-white' : 'bg-gray-200']"
-        >
-          Rooms
-        </button>
-        <button
-          @click="activeTab = 'bookings'"
-          :class="['px-4 py-2 rounded', activeTab === 'bookings' ? 'bg-blue-600 text-white' : 'bg-gray-200']"
-        >
-          Bookings
-        </button>
+      <div v-if="showNav" class="mb-6 flex space-x-4">
+        <router-link to="/" class="px-4 py-2 rounded" :class="$route.path === '/' ? 'bg-blue-600 text-white' : 'bg-gray-200'">Dashboard</router-link>
+        <router-link to="/rooms" class="px-4 py-2 rounded" :class="$route.path === '/rooms' ? 'bg-blue-600 text-white' : 'bg-gray-200'">Rooms</router-link>
+        <router-link to="/bookings" class="px-4 py-2 rounded" :class="$route.path === '/bookings' ? 'bg-blue-600 text-white' : 'bg-gray-200'">Bookings</router-link>
       </div>
-
-      <Dashboard v-if="activeTab === 'dashboard'" />
-      <RoomList v-else-if="activeTab === 'rooms'" />
-      <BookingList v-else-if="activeTab === 'bookings'" />
+      <router-view />
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import Dashboard from './components/Dashboard.vue';
-import RoomList from './components/RoomList.vue';
-import BookingList from './components/BookingList.vue';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const activeTab = ref('dashboard');
+const route = useRoute();
+const router = useRouter();
+
+const showNav = computed(() => {
+  return route.path !== '/login' && localStorage.getItem('token');
+});
+
+const logout = () => {
+  localStorage.removeItem('token');
+  router.push('/login');
+};
 </script>

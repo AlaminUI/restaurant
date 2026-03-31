@@ -139,7 +139,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
 
 const rooms = ref([]);
 const showForm = ref(false);
@@ -168,7 +167,7 @@ const form = ref({ ...defaultForm });
 
 const fetchRooms = async () => {
   try {
-    const response = await axios.get('/api/dashboard/rooms');
+    const response = await window.apiClient.get('/dashboard/rooms');
     rooms.value = response.data;
   } catch (e) {
     error.value = 'Failed to fetch rooms';
@@ -180,9 +179,9 @@ const submitRoom = async () => {
     error.value = '';
     const data = { ...form.value };
     if (editingId.value) {
-      await axios.put(`/api/dashboard/rooms/${editingId.value}`, data);
+      await window.apiClient.put(`/dashboard/rooms/${editingId.value}`, data);
     } else {
-      await axios.post(`/api/dashboard/rooms`, data);
+      await window.apiClient.post(`/dashboard/rooms`, data);
     }
     form.value = { ...defaultForm };
     editingId.value = null;
@@ -216,7 +215,7 @@ const editRoom = (room) => {
 const deleteRoom = async (id) => {
   if (!confirm('Are you sure?')) return;
   try {
-    await axios.delete(`/api/dashboard/rooms/${id}`);
+    await window.apiClient.delete(`/dashboard/rooms/${id}`);
     fetchRooms();
   } catch (e) {
     error.value = 'Failed to delete room';
