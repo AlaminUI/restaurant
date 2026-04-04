@@ -17,10 +17,10 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token');
-  if (to.meta.requiresAuth && !token) {
+  const isAuthenticated = window.Laravel && window.Laravel.isAuthenticated;
+  if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login');
-  } else if (to.path === '/login' && token) {
+  } else if (to.path === '/login' && isAuthenticated) {
     next('/');
   } else {
     next();

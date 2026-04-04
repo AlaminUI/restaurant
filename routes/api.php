@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\RoomController;
 use App\Http\Middleware\VerifyApiKey;
 use Illuminate\Support\Facades\Route;
 
-Route::post('login', [AuthController::class, 'login'])->name('login');
+Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware([VerifyApiKey::class])->group(function () {
     Route::get('me', [AuthController::class, 'me']);

@@ -114,7 +114,9 @@ const form = ref({
 
 const fetchApiKeys = async () => {
   try {
-    const response = await window.apiClient.get('/dashboard/api-keys');
+    const response = await window.apiClient.get('/dashboard/api-keys', {
+      headers: { 'X-API-Key': window.Laravel.apiKey }
+    });
     apiKeys.value = response.data;
   } catch (e) {
     error.value = 'Failed to fetch API keys';
@@ -123,7 +125,9 @@ const fetchApiKeys = async () => {
 
 const fetchStats = async () => {
   try {
-    const response = await window.apiClient.get('/dashboard/stats');
+    const response = await window.apiClient.get('/dashboard/stats', {
+      headers: { 'X-API-Key': window.Laravel.apiKey }
+    });
     stats.value = response.data;
   } catch (e) {
     console.error('Failed to fetch stats');
@@ -134,7 +138,9 @@ const generateKey = async () => {
   try {
     error.value = '';
     newKey.value = '';
-    const response = await window.apiClient.post('/dashboard/api-keys', form.value);
+    const response = await window.apiClient.post('/dashboard/api-keys', form.value, {
+      headers: { 'X-API-Key': window.Laravel.apiKey }
+    });
     newKey.value = response.data.key;
     form.value = { name: '', days: 365 };
     showForm.value = false;
@@ -146,7 +152,9 @@ const generateKey = async () => {
 
 const toggleStatus = async (key) => {
   try {
-    await window.apiClient.patch(`/dashboard/api-keys/${key.id}`, { is_active: !key.is_active });
+    await window.apiClient.patch(`/dashboard/api-keys/${key.id}`, { is_active: !key.is_active }, {
+      headers: { 'X-API-Key': window.Laravel.apiKey }
+    });
     fetchApiKeys();
   } catch (e) {
     error.value = 'Failed to update status';
@@ -156,7 +164,9 @@ const toggleStatus = async (key) => {
 const deleteKey = async (id) => {
   if (!confirm('Are you sure? This cannot be undone.')) return;
   try {
-    await window.apiClient.delete(`/dashboard/api-keys/${id}`);
+    await window.apiClient.delete(`/dashboard/api-keys/${id}`, {
+      headers: { 'X-API-Key': window.Laravel.apiKey }
+    });
     fetchApiKeys();
   } catch (e) {
     error.value = 'Failed to delete key';

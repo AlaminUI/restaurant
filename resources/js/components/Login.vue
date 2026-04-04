@@ -9,11 +9,13 @@
       </div>
 
       <form @submit.prevent="login">
+        <input type="hidden" name="_token" :value="csrfToken" />
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
           <input 
             v-model="form.email" 
             type="email" 
+            name="email"
             required 
             class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
@@ -23,6 +25,7 @@
           <input 
             v-model="form.password" 
             type="password" 
+            name="password"
             required 
             class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
@@ -40,24 +43,32 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const form = ref({ email: '', password: '' });
 const error = ref('');
 const loading = ref(false);
+const csrfToken = ref('');
+
+onMounted(() => {
+  csrfToken.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+});
 
 const login = async () => {
   loading.value = true;
   error.value = '';
   
   try {
-    const response = await window.apiClient.post('/login', form.value);
-    localStorage.setItem('token', response.data.token);
-    router.push('/');
+    await window.axios.post('/login', {
+      _token: csrfToken.value,
+      email: form.value.email,
+      password: form.value.password,
+    });
+    window.location.href = '/';
   } catch (e) {
-    error.value = e.response?.data?.error || 'Login failed';
+    error.value = e.response?.data?.message || e.response?.data?.error || 'Login failed';
   } finally {
     loading.value = false;
   }

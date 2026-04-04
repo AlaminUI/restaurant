@@ -35,11 +35,50 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function webLogin(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-        return response()->json(['message' => 'Logged out successfully']);
+        $user = User::where('email', $validated['email'])->first();
+
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
+            if ($request->expectsJson()) {
+                return response()->json(['error' => 'Invalid credentials'], 401);
+            }
+
+            return back()->with('error', 'Invalid credentials');
+        }
+
+        auth()->login($user);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+            ]);
+        }
+
+        return redirect('/');
+    }
+
+    public function showLoginForm()
+    {
+        return view('welcome');
+    }
+
+    public function webLogout(Request $request)
+    {
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/login');
     }
 
     public function me(Request $request): JsonResponse
