@@ -100,4 +100,31 @@ class RoomController extends Controller
 
         return response()->json(['message' => 'Room deleted successfully']);
     }
+
+    public function availability(Request $request, Room $room): JsonResponse
+    {
+        $startDate = $request->query('start_date', now()->toDateString());
+        $endDate = $request->query('end_date', now()->addDays(30)->toDateString());
+
+        $bookings = Booking::where('room_id', $room->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('check_in', [$startDate, $endDate])
+                    ->orWhereBetween('check_out', [$startDate, $endDate])
+                    ->orWhere(function ($query) use ($startDate, $endDate) {
+                        $query->where('check_in', '<=', $startDate)
+                            ->where('check_out', '>=', $endDate);
+                    });
+            })
+            ->get();
+
+        return response()->json([
+            'room' => $room,
+            'booked_dates' => $bookings->map(fn ($b) => [
+                'check_in' => $b->check_in,
+                'check_out' => $b->check_out,
+            ]),
+            'is_available' => $bookings->isEmpty(),
+        ]);
+    }
 }
